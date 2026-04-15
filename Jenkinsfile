@@ -16,8 +16,10 @@ pipeline {
 
         stage('Push') {
             steps {
-                sh 'docker login $REGISTRY -u admin -p admin123'
-                sh 'docker push $REGISTRY/$IMAGE:$TAG'
+                withCredentials([usernamePassword(credentialsId: 'Nexus_Creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh 'docker login $REGISTRY -u $USERNAME -p $PASSWORD'
+                    sh 'docker push $REGISTRY/$IMAGE:$TAG'
+                }            
             }
         }
     }
