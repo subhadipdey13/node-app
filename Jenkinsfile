@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        REGISTRY = "3.229.134.81:8081"
+        REGISTRY = "3.229.134.81:5000"
         IMAGE = "node-app"
         TAG = "${BUILD_NUMBER}"
     }
