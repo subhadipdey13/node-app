@@ -12,16 +12,21 @@ pipeline {
 
         stage('Build the Image') {
             steps {
-                sh 'docker build -t $REGISTRY/$IMAGE:$TAG .'
+                dir('app') {
+                    sh 'docker build -t $REGISTRY/$IMAGE:$TAG .'
+                }
+                
             }
         }
 
         stage('Push Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'Nexus_Creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh 'docker login $REGISTRY -u $USERNAME -p $PASSWORD'
-                    sh 'docker push $REGISTRY/$IMAGE:$TAG'
-                }            
+                dir('app') {
+                    withCredentials([usernamePassword(credentialsId: 'Nexus_Creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                        sh 'docker login $REGISTRY -u $USERNAME -p $PASSWORD'
+                        sh 'docker push $REGISTRY/$IMAGE:$TAG'
+                    } 
+                }                           
             }
         }
 

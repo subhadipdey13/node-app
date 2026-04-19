@@ -1,0 +1,42 @@
+---
+- name: Conditional Installation of OpenJDK 21
+  hosts: cbj
+  become: yes
+  tasks:
+    - name: Check if Java 21 is already installed
+      shell: "java -version 2>&1 | grep 'openjdk version \"21'"
+      register: java_21_installed
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      when: java_21_installed.rc != 0
+
+    - name: Fix broken dependencies and clear locks
+      shell: |
+        sudo dpkg --configure -a
+        sudo apt-get install -f
+
+    - name: Install OpenJDK 21 JDK
+      apt:
+        name: openjdk-21-jdk
+        state: present
+      when: java_21_installed.rc != 0
+
+    - name: Ensure Java 21 is the default
+      community.general.alternatives:
+        name: java
+        path: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+        link: /usr/bin/java
+      when: java_21_installed.rc != 0
+
+    - name: Confirm Installation
+      command: java -version
+      register: final_java_version
+      changed_when: false
+
+    - name: Print Java Version
+      debug:
+        var: final_java_version.stderr_lines
